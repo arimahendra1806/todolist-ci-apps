@@ -33,11 +33,36 @@ class Todolist extends ResourceController
     public function index()
     {
         $data = $this->todolist->orderBy('updated_at', 'DESC')->findAll();
-        return $this->respond($data);
+        $encoded_data = base64_encode(json_encode($data));
+
+        $response = [
+            'data' => $encoded_data
+        ];
+        return $this->respond($response, 200, 'application/json');
     }
 
     public function updateMark($id)
     {
-        $data = $this->todolist->where('id', $id)->first();
+        $dataTodolist = $this->todolist->where('id', $id)->first();
+
+        $data = [];
+
+        if ($dataTodolist['status'] == 'Completed' && $dataTodolist['date']) {
+            $data['status'] = 'Has due date';
+            $message = 'Tasks marked to do and have due date';
+        } elseif ($dataTodolist['status'] == 'Completed') {
+            $data['status'] = 'Active';
+            $message = 'Tasks marked to do';
+        } else {
+            $data['status'] = 'Completed';
+            $message = 'Tasks marked complete';
+        }
+
+        $this->todolist->update($id, $data);
+
+        $response = [
+            'messages' => $message
+        ];
+        return $this->respond($response, 200, 'application/json');
     }
 }

@@ -36,7 +36,23 @@ $(document).ready(function () {
         $('[data-toggle="tooltip"]').tooltip();
         $('.btnCheck').click(function () {
             var id = $(this).data('id');
-            alert('Data ID:' + id);
+            $.ajax({
+                url: '/todolist-updateMark/' + id,
+                method: 'PATCH',
+                dataType: 'JSON',
+                success: function (response) {
+                    Swal.fire({
+                        title: response.messages,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    loadTodolist();
+                },
+                error: function (xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
         });
     }
 
@@ -46,17 +62,17 @@ $(document).ready(function () {
             method: 'GET',
             dataType: 'JSON',
             success: function (response) {
-                // var encoded_data = response.data;
-                // var decoded_data = JSON.parse(atob(encoded_data));
+                var encoded_data = response.data;
+                var decoded_data = JSON.parse(atob(encoded_data));
                 var todolistHtml = '';
-                console.log(response);
-                if (response.length > 0) {
-                    $.each(response, function (index, todo) {
+                // console.log(decoded_data);
+                if (decoded_data.length > 0) {
+                    $.each(decoded_data, function (index, todo) {
                         todolistHtml += `
                         <div class="row px-3 align-items-center todo-item rounded">
                             <div class="col-auto m-1 p-0 d-flex align-items-center">
                                 <h2 class="m-0 p-0">
-                                ${(todo.status == 'Active') ?
+                                ${(todo.status == 'Completed') ?
                                 '<i class="fa fa-check-square-o text-primary btn m-0 p-0 btnCheck" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>'
                                 : '<i class="fa fa-square-o text-primary btn m-0 p-0 btnCheck" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>'
                             }
@@ -69,8 +85,8 @@ $(document).ready(function () {
                             <div class="col-auto m-1 p-0 px-3">
                                 <div class="row">
                             ${(todo.date && todo.status == 'Completed') ?
-                                '<div class="col-auto d-flex align-items-center rounded bg-white border border-success"><i class="fa fa-check my-2 px-2 text-success btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="In completed"></i><h6 class="text my-2 pr-2">' + getDateFormat(todo.created_at) + '</h6></div>'
-                                : (todo.date && todo.status != 'Completed') ? '<div class="col-auto d-flex align-items-center rounded bg-white border border-warning"><i class="fa fa-hourglass-2 my-2 px-2 text-warning btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Due date"></i><h6 class="text my-2 pr-2">' + getDateFormat(todo.created_at) + '</h6></div>'
+                                '<div class="col-auto d-flex align-items-center rounded bg-white border border-success"><i class="fa fa-check my-2 px-2 text-success btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="In completed"></i><h6 class="text my-2 pr-2">' + getDateFormat(todo.date) + '</h6></div>'
+                                : (todo.date && todo.status != 'Completed') ? '<div class="col-auto d-flex align-items-center rounded bg-white border border-warning"><i class="fa fa-hourglass-2 my-2 px-2 text-warning btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Due date"></i><h6 class="text my-2 pr-2">' + getDateFormat(todo.date) + '</h6></div>'
                                     : ''
                             }
                                 </div >
