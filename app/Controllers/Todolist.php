@@ -18,21 +18,9 @@ class Todolist extends ResourceController
         $this->todolist = new TodolistModel();
     }
 
-    private function todolistRules()
-    {
-        $todolistRules = [
-            'todo' => [
-                'label' => 'Task todo',
-                'rules' => 'required'
-            ]
-        ];
-
-        return $todolistRules;
-    }
-
     public function index()
     {
-        $data = $this->todolist->orderBy('updated_at', 'DESC')->findAll();
+        $data = $this->todolist->getTodolists();
         $encoded_data = base64_encode(json_encode($data));
 
         $response = [
@@ -41,9 +29,20 @@ class Todolist extends ResourceController
         return $this->respond($response, 200, 'application/json');
     }
 
+    public function create()
+    {
+        $data = $this->request->getPost();
+
+        if (!$data['todo']) {
+            return $this->respond(500, 'application/json');
+        }
+
+        return $this->respond($data, 200, 'application/json');
+    }
+
     public function updateMark($id)
     {
-        $dataTodolist = $this->todolist->where('id', $id)->first();
+        $dataTodolist = $this->todolist->getTodolist($id);
 
         $data = [];
 
@@ -58,7 +57,7 @@ class Todolist extends ResourceController
             $message = 'Tasks marked complete';
         }
 
-        $this->todolist->update($id, $data);
+        $this->todolist->updateTodolist($data, $id);
 
         $response = [
             'messages' => $message

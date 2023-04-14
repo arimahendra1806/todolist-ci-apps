@@ -1,11 +1,20 @@
 $(document).ready(function () {
+    var currentDate = formatDate(new Date());
+
+    /* Ajax Token */
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
     function formatDate(date) {
         return (
-            date.getDate() +
-            "/" +
+            date.getFullYear() +
+            "-" +
             (date.getMonth() + 1) +
-            "/" +
-            date.getFullYear()
+            "-" +
+            date.getDate()
         );
     }
 
@@ -32,13 +41,16 @@ $(document).ready(function () {
         return formattedDate;
     }
 
-    function afterLoadTodoList() {
+    function loadTooltip() {
         $('[data-toggle="tooltip"]').tooltip();
-        $('.btnCheck').click(function () {
+    }
+
+    function afterLoadTodoList() {
+        $('.btnMark').click(function () {
             var id = $(this).data('id');
             $.ajax({
                 url: '/todolist-updateMark/' + id,
-                method: 'PATCH',
+                method: 'GET',
                 dataType: 'JSON',
                 success: function (response) {
                     Swal.fire({
@@ -73,8 +85,8 @@ $(document).ready(function () {
                             <div class="col-auto m-1 p-0 d-flex align-items-center">
                                 <h2 class="m-0 p-0">
                                 ${(todo.status == 'Completed') ?
-                                '<i class="fa fa-check-square-o text-primary btn m-0 p-0 btnCheck" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>'
-                                : '<i class="fa fa-square-o text-primary btn m-0 p-0 btnCheck" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>'
+                                '<i class="fa fa-check-square-o text-primary btn m-0 p-0 btnMark" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>'
+                                : '<i class="fa fa-square-o text-primary btn m-0 p-0 btnMark" data-id="' + todo.id + '" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>'
                             }
                                 </h2>
                             </div>
@@ -116,6 +128,7 @@ $(document).ready(function () {
                     var unknownTodolist = '<div class="col-md-12 mt-4"><center><h4>Todo task doesnt exist yet</h4></center></div>';
                     $('#todolist-container').html(unknownTodolist);
                 }
+                loadTooltip();
             },
             error: function (xhr, status, error) {
                 alert('Error: ' + error);
@@ -123,26 +136,72 @@ $(document).ready(function () {
         });
     }
 
-    var currentDate = formatDate(new Date());
-
-    $(".due-date-button").datepicker({
-        format: "dd/mm/yyyy",
-        autoclose: true,
-        todayHighlight: true,
-        startDate: currentDate,
-        orientation: "bottom right"
-    });
-
-    $(".due-date-button").on("click", function (event) {
-        $(".due-date-button")
-            .datepicker("show")
-            .on("changeDate", function (dateChangeEvent) {
-                $(".due-date-button").datepicker("hide");
-                $(".due-date-label").text(formatDate(dateChangeEvent.date));
-            });
-    });
-
     $(function () {
         loadTodolist();
+
+        $(".due-date-button").datepicker({
+            format: "dd/mm/yyyy",
+            autoclose: true,
+            todayHighlight: true,
+            startDate: currentDate,
+            orientation: "bottom right"
+        });
+
+        $(".due-date-button").on("click", function (event) {
+            $(".due-date-button")
+                .datepicker("show")
+                .on("changeDate", function (dateChangeEvent) {
+                    $(".due-date-button").datepicker("hide");
+                    $(".due-date-label").text(getDateFormat(dateChangeEvent.date));
+                    $("#dueDate").val(formatDate(dateChangeEvent.date));
+                    $(".clear-due-date-button").removeClass('d-none');
+                });
+        });
+
+        $(".clear-due-date-button").on("click", function () {
+            $(".due-date-label").text('Due date not set');
+            $("#dueDate").val('');
+            $(".clear-due-date-button").addClass('d-none');
+        })
+
+        $("#formAdd").submit(function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            console.log($('meta[name="csrf-token"]').attr('content'))
+
+            $.ajax({
+                url: "/todolist",
+                type: "POST",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    $(".btnAdd").attr('disable', 'disabled');
+                    $(".btnAdd").html('<i class="fa fa-spin fa-spinner"></i>');
+                },
+                complete: function () {
+                    $(".btnAdd").removeAttr('disable');
+                    $(".btnAdd").html('Add');
+                },
+                success: function (response) {
+                    // $('#formAdd').trigger('reset');
+                    // Swal.fire({
+                    //     title: response.messages,
+                    //     icon: 'success',
+                    //     showConfirmButton: false,
+                    //     timer: 1500
+                    // });
+                    // loadTodolist();
+                    console.log(response)
+                    console.log($('meta[name="csrf-token"]').attr('content'));
+                },
+                error: function (xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        });
     });
 });
