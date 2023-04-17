@@ -29,10 +29,15 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+// $routes->get('/', 'Home::index');
 
-$routes->resource('todolist');
+// $routes->resource('todolist');
+$routes->get('/', 'Todolist::index');
+$routes->get('todolist', 'Todolist::loadTodolist');
+$routes->post('todolist', 'Todolist::create');
+$routes->post('todolist-update', 'Todolist::update');
 $routes->patch('todolist-updateMark/(:any)', 'Todolist::updateMark/$1');
+$routes->delete('todolist/(:any)', 'Todolist::delete/$1');
 
 /*
  * --------------------------------------------------------------------

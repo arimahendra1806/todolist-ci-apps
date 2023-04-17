@@ -20,30 +20,7 @@ class Todolist extends ResourceController
 
     public function index()
     {
-        $dataGet = $this->request->getVar();
-
-        switch ($dataGet['filter']) {
-            case 'All':
-                $data = $this->todolist->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
-                break;
-
-            case 'Active':
-                $data = $this->todolist->where('status !=', 'Completed')
-                    ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
-                break;
-
-            default:
-                $data = $this->todolist->where('status', $dataGet['filter'])
-                    ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
-                break;
-        }
-
-        $encoded_data = base64_encode(json_encode($data));
-
-        $response = [
-            'data' => $encoded_data
-        ];
-        return $this->respond($response, 200, 'application/json');
+        return view('todolist/index');
     }
 
     public function create()
@@ -73,6 +50,41 @@ class Todolist extends ResourceController
         return $this->respond($response, 200, 'application/json');
     }
 
+    public function update($id = null)
+    {
+        $dataPost = $this->request->getPost();
+
+        $data = [];
+        if (!$dataPost['todo']) {
+            return $this->respond(['messages' => 'Task required'], 500, 'application/json');
+        } else {
+            $data['todo'] = $dataPost['todo'];
+        }
+
+        if ($dataPost['date']) {
+            $data['date'] = $dataPost['date'];
+        } else {
+            $data['date'] = null;
+        }
+
+        $this->todolist->updateTodolist($data, $dataPost['id']);
+
+        $response = [
+            'messages' => 'Tasks has been updated',
+        ];
+        return $this->respond($response, 200, 'application/json');
+    }
+
+    public function delete($id = null)
+    {
+        $this->todolist->deleteTodolist($id);
+
+        $response = [
+            'messages' => 'Tasks has been deleted',
+        ];
+        return $this->respond($response, 200, 'application/json');
+    }
+
     public function updateMark($id)
     {
         $dataTodolist = $this->todolist->getTodolist($id);
@@ -94,6 +106,38 @@ class Todolist extends ResourceController
 
         $response = [
             'messages' => $message,
+        ];
+        return $this->respond($response, 200, 'application/json');
+    }
+
+    public function loadTodolist()
+    {
+        $dataGet = $this->request->getVar();
+
+        if (!$dataGet) {
+            $data = $this->todolist->getTodolists();
+        } else {
+            switch ($dataGet['filter']) {
+                case 'All':
+                    $data = $this->todolist->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                    break;
+
+                case 'Active':
+                    $data = $this->todolist->where('status !=', 'Completed')
+                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                    break;
+
+                default:
+                    $data = $this->todolist->where('status', $dataGet['filter'])
+                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                    break;
+            }
+        }
+
+        $encoded_data = base64_encode(json_encode($data));
+
+        $response = [
+            'data' => $encoded_data
         ];
         return $this->respond($response, 200, 'application/json');
     }

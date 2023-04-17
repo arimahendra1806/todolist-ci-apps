@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var currentDate = formatDate(new Date());
-    var sortToggled = false;
+    var sortToggled = true;
     var arrDataFilter = [];
 
     /* Ajax Token */
@@ -77,6 +77,56 @@ $(document).ready(function () {
                 }
             });
         });
+
+        $('.edit-btn').click(function () {
+            var id = $(this).data('id');
+            var todo = $(this).data('todo');
+            var date = $(this).data('date');
+            $('#formEdit').trigger('reset');
+            $('#staticBackdrop').modal('show');
+            $('#editId').val(id);
+            $('#editTodo').val(todo);
+            if (date) {
+                $("#editDate").val(getDateFormat(date));
+                $("#dueDateEdit").val(date);
+                $('.due-date-button-edit').datepicker('update', date);
+                $(".clear-due-date-button-edit").removeClass('d-none');
+            }
+        })
+
+        $(".delete-btn").click(function () {
+            var id = $(this).data('id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You will not be able to restore this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete!',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        url: '/todolist/' + id,
+                        method: 'DELETE',
+                        success: function (response) {
+                            Swal.fire({
+                                title: response.messages,
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            getDataFilter();
+                            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                        },
+                        error: function (xhr, status, error) {
+                            alert('Error: ' + error);
+                        }
+                    });
+                }
+            });
+        })
     }
 
     function loadTodolist(filterTodolist, sortByTodolist, sortTodolist) {
@@ -105,8 +155,7 @@ $(document).ready(function () {
                                 </h2>
                             </div>
                             <div class="col px-1 m-1 d-flex align-items-center">
-                                <input type="text" class="form-control form-control-lg border-0 edit-todo-input bg-transparent rounded px-3" id="todoRead-${index}" readonly value="${todo.todo}" title="${todo.todo}" />
-                                <input type="text" class="form-control form-control-lg border-0 edit-todo-input rounded px-3 d-none" id="todo-${index}" name="todo" value="${todo.todo}" />
+                                <input type="text" class="form-control form-control-lg border-0 edit-todo-input bg-transparent rounded px-3" readonly value="${todo.todo}" title="${todo.todo}" />
                             </div>
                             <div class="col-auto m-1 p-0 px-3">
                                 <div class="row">
@@ -120,10 +169,10 @@ $(document).ready(function () {
                         <div class="col-auto m-1 p-0 todo-actions">
                             <div class="row d-flex align-items-center justify-content-end">
                                 <h5 class="m-0 p-0 px-2">
-                                    <i class="fa fa-pencil text-info btn m-0 p-0" id="btnEdit" data-id="${index}" data-toggle="tooltip" data-placement="bottom" title="Edit task"></i>
+                                    <i class="fa fa-pencil text-info btn m-0 p-0 edit-btn" data-id="${todo.id}" data-todo="${todo.todo}" data-date="${todo.date}" data-toggle="tooltip" data-placement="bottom" title="Edit task"></i>
                                 </h5>
                                 <h5 class="m-0 p-0 px-2">
-                                    <i class="fa fa-trash-o text-danger btn m-0 p-0" id="btnDelete" data-id="${index}" data-toggle="tooltip" data-placement="bottom" title="Delete task"></i>
+                                    <i class="fa fa-trash-o text-danger btn m-0 p-0 delete-btn" data-id="${todo.id}" data-toggle="tooltip" data-placement="bottom" title="Delete task"></i>
                                 </h5>
                             </div>
                             <div class="row todo-created-info">
@@ -154,6 +203,12 @@ $(document).ready(function () {
         $(".due-date-label").text('Due date not set');
         $("#dueDate").val('');
         $(".clear-due-date-button").addClass('d-none');
+    }
+
+    function clearDueDateButtonEdit() {
+        $("#editDate").val('Due date not set');
+        $("#dueDateEdit").val('');
+        $(".clear-due-date-button-edit").addClass('d-none');
     }
 
     $(function () {
@@ -226,6 +281,49 @@ $(document).ready(function () {
             });
         });
 
+        $("#formEdit").submit(function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/todolist-update",
+                type: "POST",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    $(".btnEdit").attr('disable', 'disabled');
+                    $(".btnEdit").html('<i class="fa fa-spin fa-spinner"></i>');
+                },
+                complete: function () {
+                    $(".btnEdit").removeAttr('disable');
+                    $(".btnEdit").html('Save');
+                },
+                success: function (response) {
+                    clearDueDateButtonEdit();
+                    $('#staticBackdrop').modal('hide');
+                    Swal.fire({
+                        title: response.messages,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    getDataFilter();
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                },
+                error: function (xhr, status, error) {
+                    Swal.fire({
+                        title: 'Error : ' + xhr.responseJSON.messages,
+                        icon: 'warning',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
+        });
+
         $(".filter-btn").on("change", function (event) {
             getDataFilter();
             loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
@@ -251,5 +349,28 @@ $(document).ready(function () {
             getDataFilter();
             loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
         });
+
+        $(".due-date-button-edit").datepicker({
+            format: "yyyy-mm-dd",
+            autoclose: true,
+            todayHighlight: true,
+            startDate: 'currentDate',
+            orientation: "bottom right"
+        });
+
+        $(".due-date-button-edit").on("click", function (event) {
+            $(".due-date-button-edit")
+                .datepicker("show")
+                .on("changeDate", function (dateChangeEvent) {
+                    $(".due-date-button-edit").datepicker("hide");
+                    $("#editDate").val(getDateFormat(dateChangeEvent.date));
+                    $("#dueDateEdit").val(formatDate(dateChangeEvent.date));
+                    $(".clear-due-date-button-edit").removeClass('d-none');
+                });
+        });
+
+        $(".clear-due-date-button-edit").on("click", function () {
+            clearDueDateButtonEdit();
+        })
     });
 });

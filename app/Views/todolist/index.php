@@ -16,6 +16,39 @@
 </head>
 
 <body>
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="staticBackdropLabel">Edit Task</h5>
+                </div>
+                <form id="formEdit">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="formGroupExampleInput">Task todo:</label>
+                            <input type="hidden" class="form-control" id="editId" name="id" readonly>
+                            <input type="text" class="form-control" id="editTodo" name="todo" placeholder="Edit task">
+                        </div>
+                        <div class="form-group">
+                            <label for="formGroupExampleInput2">Due date:</label>
+                            <div class="d-flex align-items-center">
+                                <input type="text" class="form-control" id="editDate" placeholder="Due date not set" readonly>
+                                <input type="hidden" id="dueDateEdit" name="date">
+                                <i class="fa fa-calendar my-2 px-1 text-primary btn due-date-button-edit" data-toggle="tooltip" data-placement="bottom" title="Set a Due date"></i>
+                                <i class="fa fa-calendar-times-o my-2 px-1 text-danger btn clear-due-date-button-edit d-none" data-toggle="tooltip" data-placement="bottom" title="Clear Due date"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btnEdit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="container m-5 p-2 rounded mx-auto bg-light shadow">
         <!-- App title section -->
         <div class="row m-1 p-4">
@@ -64,114 +97,15 @@
                     <option value="created_at" selected>Added date</option>
                     <option value="date">Due date</option>
                 </select>
-                <input type="hidden" id="sortHiddenValue" value="asc">
-                <i class="fa fa fa-sort-amount-asc text-info btn mx-0 px-0 pl-1 sort-btn sort-asc" data-toggle="tooltip" data-placement="bottom" title="Ascending"></i>
-                <i class="fa fa fa-sort-amount-desc text-info btn mx-0 px-0 pl-1 sort-btn sort-desc d-none" data-toggle="tooltip" data-placement="bottom" title="Descending"></i>
+                <input type="hidden" id="sortHiddenValue" value="desc">
+                <i class="fa fa fa-sort-amount-asc text-info btn mx-0 px-0 pl-1 sort-btn sort-asc d-none" data-toggle="tooltip" data-placement="bottom" title="Ascending"></i>
+                <i class="fa fa fa-sort-amount-desc text-info btn mx-0 px-0 pl-1 sort-btn sort-desc" data-toggle="tooltip" data-placement="bottom" title="Descending"></i>
             </div>
         </div>
         <!-- Todo list section -->
         <div class="row mx-1 px-5 pb-3 w-80">
             <div class="col mx-auto">
                 <div id="todolist-container"></div>
-                <!-- Todo Item 1 -->
-                <!-- <div class="row px-3 align-items-center todo-item rounded">
-                    <div class="col-auto m-1 p-0 d-flex align-items-center">
-                        <h2 class="m-0 p-0">
-                            <i class="fa fa-square-o text-primary btn m-0 p-0 d-none" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>
-                            <i class="fa fa-check-square-o text-primary btn m-0 p-0" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>
-                        </h2>
-                    </div>
-                    <div class="col px-1 m-1 d-flex align-items-center">
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input bg-transparent rounded px-3" readonly value="Buy groceries for next week" title="Buy groceries for next week" />
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input rounded px-3 d-none" value="Buy groceries for next week" />
-                    </div>
-                    <div class="col-auto m-1 p-0 px-3 d-none">
-                    </div>
-                    <div class="col-auto m-1 p-0 todo-actions">
-                        <div class="row d-flex align-items-center justify-content-end">
-                            <h5 class="m-0 p-0 px-2">
-                                <i class="fa fa-pencil text-info btn m-0 p-0" data-toggle="tooltip" data-placement="bottom" title="Edit todo"></i>
-                            </h5>
-                            <h5 class="m-0 p-0 px-2">
-                                <i class="fa fa-trash-o text-danger btn m-0 p-0" data-toggle="tooltip" data-placement="bottom" title="Delete todo"></i>
-                            </h5>
-                        </div>
-                        <div class="row todo-created-info">
-                            <div class="col-auto d-flex align-items-center pr-2">
-                                <i class="fa fa-info-circle my-2 px-2 text-black-50 btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Created date"></i>
-                                <label class="date-label my-2 text-black-50">28th Jun 2020</label>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-                <!-- Todo Item 2 -->
-                <!-- <div class="row px-3 align-items-center todo-item rounded">
-                    <div class="col-auto m-1 p-0 d-flex align-items-center">
-                        <h2 class="m-0 p-0">
-                            <i class="fa fa-square-o text-primary btn m-0 p-0 btnCheck" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>
-                            <i class="fa fa-check-square-o text-primary btn m-0 p-0 d-none btnCheck" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>
-                        </h2>
-                    </div>
-                    <div class="col px-1 m-1 d-flex align-items-center">
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input bg-transparent rounded px-3" id="todoRead" readonly value="Renew car insurance" title="Renew car insurance" />
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input rounded px-3 d-none" id="todo" name="todo" value="Renew car insurance" />
-                    </div>
-                    <div class="col-auto m-1 p-0 px-3">
-                        <div class="row">
-                            <div class="col-auto d-flex align-items-center rounded bg-white border border-warning">
-                                <i class="fa fa-hourglass-2 my-2 px-2 text-warning btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Due on date"></i>
-                                <h6 class="text my-2 pr-2">28th Jun 2020</h6>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-auto m-1 p-0 todo-actions">
-                        <div class="row d-flex align-items-center justify-content-end">
-                            <h5 class="m-0 p-0 px-2">
-                                <i class="fa fa-pencil text-info btn m-0 p-0" id="btnEdit" data-toggle="tooltip" data-placement="bottom" title="Edit todo"></i>
-                            </h5>
-                            <h5 class="m-0 p-0 px-2">
-                                <i class="fa fa-trash-o text-danger btn m-0 p-0" id="btnDelete" data-toggle="tooltip" data-placement="bottom" title="Delete todo"></i>
-                            </h5>
-                        </div>
-                        <div class="row todo-created-info">
-                            <div class="col-auto d-flex align-items-center pr-2">
-                                <i class="fa fa-info-circle my-2 px-2 text-black-50 btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Created date"></i>
-                                <label class="date-label my-2 text-black-50">28th Jun 2020</label>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-                <!-- Todo Item 3 -->
-                <!-- <div class="row px-3 align-items-center todo-item editing rounded">
-                    <div class="col-auto m-1 p-0 d-flex align-items-center">
-                        <h2 class="m-0 p-0">
-                            <i class="fa fa-square-o text-primary btn m-0 p-0 btnCheck" data-toggle="tooltip" data-placement="bottom" title="Mark as complete"></i>
-                            <i class="fa fa-check-square-o text-primary btn m-0 p-0 btnCheck" data-toggle="tooltip" data-placement="bottom" title="Mark as todo"></i>
-                        </h2>
-                    </div>
-                    <div class="col px-1 m-1 d-flex align-items-center">
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input bg-transparent rounded px-3 d-none" readonly value="Sign up for online course" title="Sign up for online course" />
-                        <input type="text" class="form-control form-control-lg border-0 edit-todo-input rounded px-3" value="Sign up for online course" />
-                    </div>
-                    <div class="col-auto m-1 p-0 px-3 d-none">
-                    </div>
-                    <div class="col-auto m-1 p-0 todo-actions">
-                        <div class="row d-flex align-items-center justify-content-end">
-                            <h5 class="m-0 p-0 px-2 edit-icon">
-                                <i class="fa fa-pencil text-info btn m-0 p-0" data-toggle="tooltip" data-placement="bottom" title="Edit todo"></i>
-                            </h5>
-                            <h5 class="m-0 p-0 px-2">
-                                <i class="fa fa-trash-o text-danger btn m-0 p-0" data-toggle="tooltip" data-placement="bottom" title="Delete todo"></i>
-                            </h5>
-                        </div>
-                        <div class="row todo-created-info">
-                            <div class="col-auto d-flex align-items-center pr-2">
-                                <i class="fa fa-info-circle my-2 px-2 text-black-50 btn" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Created date"></i>
-                                <label class="date-label my-2 text-black-50">28th Jun 2020</label>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>
