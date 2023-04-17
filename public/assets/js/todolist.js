@@ -1,8 +1,12 @@
 $(document).ready(function () {
     var currentDate = formatDate(new Date());
+    var sortToggled = false;
+    var arrDataFilter = [];
 
     /* Ajax Token */
     $.ajaxSetup({
+        dataType: 'JSON',
+        cache: false,
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
@@ -45,13 +49,19 @@ $(document).ready(function () {
         $('[data-toggle="tooltip"]').tooltip();
     }
 
+    function getDataFilter() {
+        arrDataFilter.length = 0;
+        arrDataFilter.push($('.filter-btn').val());
+        arrDataFilter.push($('.sort-by-btn').val());
+        arrDataFilter.push($('#sortHiddenValue').val());
+    }
+
     function afterLoadTodoList() {
         $('.btnMark').click(function () {
             var id = $(this).data('id');
             $.ajax({
                 url: '/todolist-updateMark/' + id,
-                method: 'GET',
-                dataType: 'JSON',
+                method: 'PATCH',
                 success: function (response) {
                     Swal.fire({
                         title: response.messages,
@@ -59,7 +69,8 @@ $(document).ready(function () {
                         showConfirmButton: false,
                         timer: 1500
                     });
-                    loadTodolist();
+                    getDataFilter();
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
                 },
                 error: function (xhr, status, error) {
                     alert('Error: ' + error);
@@ -68,16 +79,19 @@ $(document).ready(function () {
         });
     }
 
-    function loadTodolist() {
+    function loadTodolist(filterTodolist, sortByTodolist, sortTodolist) {
         $.ajax({
             url: '/todolist',
             method: 'GET',
-            dataType: 'JSON',
+            data: {
+                filter: filterTodolist,
+                sortBy: sortByTodolist,
+                sort: sortTodolist
+            },
             success: function (response) {
                 var encoded_data = response.data;
                 var decoded_data = JSON.parse(atob(encoded_data));
                 var todolistHtml = '';
-                // console.log(decoded_data);
                 if (decoded_data.length > 0) {
                     $.each(decoded_data, function (index, todo) {
                         todolistHtml += `
@@ -136,8 +150,15 @@ $(document).ready(function () {
         });
     }
 
+    function clearDueDateButton() {
+        $(".due-date-label").text('Due date not set');
+        $("#dueDate").val('');
+        $(".clear-due-date-button").addClass('d-none');
+    }
+
     $(function () {
-        loadTodolist();
+        getDataFilter();
+        loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
 
         $(".due-date-button").datepicker({
             format: "dd/mm/yyyy",
@@ -159,17 +180,13 @@ $(document).ready(function () {
         });
 
         $(".clear-due-date-button").on("click", function () {
-            $(".due-date-label").text('Due date not set');
-            $("#dueDate").val('');
-            $(".clear-due-date-button").addClass('d-none');
+            clearDueDateButton();
         })
 
         $("#formAdd").submit(function (event) {
             event.preventDefault();
 
             var formData = new FormData(this);
-
-            console.log($('meta[name="csrf-token"]').attr('content'))
 
             $.ajax({
                 url: "/todolist",
@@ -187,21 +204,52 @@ $(document).ready(function () {
                     $(".btnAdd").html('Add');
                 },
                 success: function (response) {
-                    // $('#formAdd').trigger('reset');
-                    // Swal.fire({
-                    //     title: response.messages,
-                    //     icon: 'success',
-                    //     showConfirmButton: false,
-                    //     timer: 1500
-                    // });
-                    // loadTodolist();
-                    console.log(response)
-                    console.log($('meta[name="csrf-token"]').attr('content'));
+                    clearDueDateButton();
+                    $('#formAdd').trigger('reset');
+                    Swal.fire({
+                        title: response.messages,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    getDataFilter();
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
                 },
                 error: function (xhr, status, error) {
-                    alert('Error: ' + error);
+                    Swal.fire({
+                        title: 'Error : ' + xhr.responseJSON.messages,
+                        icon: 'warning',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                 }
             });
+        });
+
+        $(".filter-btn").on("change", function (event) {
+            getDataFilter();
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+        });
+
+        $(".sort-by-btn").on("change", function (event) {
+            getDataFilter();
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+        });
+
+        $(".sort-btn").on("click", function (event) {
+            if (sortToggled) {
+                $('.sort-asc').removeClass('d-none');
+                $('.sort-desc').addClass('d-none');
+                sortToggled = false;
+                $('#sortHiddenValue').val('asc');
+            } else {
+                $('.sort-desc').removeClass('d-none');
+                $('.sort-asc').addClass('d-none');
+                sortToggled = true;
+                $('#sortHiddenValue').val('desc');
+            }
+            getDataFilter();
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
         });
     });
 });

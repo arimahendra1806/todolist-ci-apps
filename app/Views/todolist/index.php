@@ -37,7 +37,7 @@
                             <label class="text-secondary my-2 p-0 px-1 view-opt-label due-date-label">Due date not set</label>
                             <i class="fa fa-calendar my-2 px-1 text-primary btn due-date-button" data-toggle="tooltip" data-placement="bottom" title="Set a Due date"></i>
                             <i class="fa fa-calendar-times-o my-2 px-1 text-danger btn clear-due-date-button d-none" data-toggle="tooltip" data-placement="bottom" title="Clear Due date"></i>
-                            <input type="text" id="dueDate" name="date">
+                            <input type="hidden" id="dueDate" name="date">
                         </div>
                         <div class="col-auto px-0 mx-0 mr-2">
                             <button type="submit" class="btn btn-primary btnAdd">Add</button>
@@ -51,21 +51,22 @@
         <div class="row m-1 p-3 px-5 justify-content-end">
             <div class="col-auto d-flex align-items-center">
                 <label class="text-secondary my-2 pr-2 view-opt-label">Filter</label>
-                <select class="custom-select custom-select-sm btn my-2">
-                    <option value="all" selected>All</option>
-                    <option value="completed">Completed</option>
-                    <option value="active">Active</option>
-                    <option value="has-due-date">Has due date</option>
+                <select class="custom-select custom-select-sm btn my-2 filter-btn">
+                    <option value="All" selected>All</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Active">Active</option>
+                    <option value="Has due date">Has due date</option>
                 </select>
             </div>
             <div class="col-auto d-flex align-items-center px-1 pr-3">
                 <label class="text-secondary my-2 pr-2 view-opt-label">Sort</label>
-                <select class="custom-select custom-select-sm btn my-2">
-                    <option value="added-date-asc" selected>Added date</option>
-                    <option value="due-date-desc">Due date</option>
+                <select class="custom-select custom-select-sm btn my-2 sort-by-btn">
+                    <option value="created_at" selected>Added date</option>
+                    <option value="date">Due date</option>
                 </select>
-                <i class="fa fa fa-sort-amount-asc text-info btn mx-0 px-0 pl-1" data-toggle="tooltip" data-placement="bottom" title="Ascending"></i>
-                <i class="fa fa fa-sort-amount-desc text-info btn mx-0 px-0 pl-1 d-none" data-toggle="tooltip" data-placement="bottom" title="Descending"></i>
+                <input type="hidden" id="sortHiddenValue" value="asc">
+                <i class="fa fa fa-sort-amount-asc text-info btn mx-0 px-0 pl-1 sort-btn sort-asc" data-toggle="tooltip" data-placement="bottom" title="Ascending"></i>
+                <i class="fa fa fa-sort-amount-desc text-info btn mx-0 px-0 pl-1 sort-btn sort-desc d-none" data-toggle="tooltip" data-placement="bottom" title="Descending"></i>
             </div>
         </div>
         <!-- Todo list section -->

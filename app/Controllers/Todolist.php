@@ -20,7 +20,24 @@ class Todolist extends ResourceController
 
     public function index()
     {
-        $data = $this->todolist->getTodolists();
+        $dataGet = $this->request->getVar();
+
+        switch ($dataGet['filter']) {
+            case 'All':
+                $data = $this->todolist->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                break;
+
+            case 'Active':
+                $data = $this->todolist->where('status !=', 'Completed')
+                    ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                break;
+
+            default:
+                $data = $this->todolist->where('status', $dataGet['filter'])
+                    ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                break;
+        }
+
         $encoded_data = base64_encode(json_encode($data));
 
         $response = [
@@ -31,13 +48,29 @@ class Todolist extends ResourceController
 
     public function create()
     {
-        $data = $this->request->getPost();
+        $dataPost = $this->request->getPost();
 
-        if (!$data['todo']) {
-            return $this->respond(500, 'application/json');
+        $data = [];
+
+        if (!$dataPost['todo']) {
+            return $this->respond(['messages' => 'Task required'], 500, 'application/json');
+        } else {
+            $data['todo'] = $dataPost['todo'];
         }
 
-        return $this->respond($data, 200, 'application/json');
+        if ($dataPost['date']) {
+            $data['date'] = $dataPost['date'];
+            $data['status'] = 'Has due date';
+        } else {
+            $data['status'] = 'Active';
+        }
+
+        $this->todolist->insertTodolist($data);
+
+        $response = [
+            'messages' => 'Tasks has been added',
+        ];
+        return $this->respond($response, 200, 'application/json');
     }
 
     public function updateMark($id)
@@ -60,7 +93,7 @@ class Todolist extends ResourceController
         $this->todolist->updateTodolist($data, $id);
 
         $response = [
-            'messages' => $message
+            'messages' => $message,
         ];
         return $this->respond($response, 200, 'application/json');
     }

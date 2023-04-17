@@ -32,7 +32,7 @@ $routes->set404Override();
 $routes->get('/', 'Home::index');
 
 $routes->resource('todolist');
-$routes->get('todolist-updateMark/(:any)', 'Todolist::updateMark/$1');
+$routes->patch('todolist-updateMark/(:any)', 'Todolist::updateMark/$1');
 
 /*
  * --------------------------------------------------------------------

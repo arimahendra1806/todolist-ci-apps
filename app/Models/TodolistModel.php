@@ -43,6 +43,7 @@ class TodolistModel extends Model
 
     public function insertTodolist($data)
     {
+        $data['id'] = Uuid::uuid4()->toString();
         return $this->save($data);
     }
 
