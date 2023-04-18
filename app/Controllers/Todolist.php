@@ -119,17 +119,18 @@ class Todolist extends ResourceController
         } else {
             switch ($dataGet['filter']) {
                 case 'All':
-                    $data = $this->todolist->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                    $data = $this->todolist
+                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll($dataGet['limit']);
                     break;
 
                 case 'Active':
                     $data = $this->todolist->where('status !=', 'Completed')
-                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll($dataGet['limit']);
                     break;
 
                 default:
                     $data = $this->todolist->where('status', $dataGet['filter'])
-                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll();
+                        ->orderBy($dataGet['sortBy'], $dataGet['sort'])->findAll($dataGet['limit']);
                     break;
             }
         }
@@ -137,7 +138,8 @@ class Todolist extends ResourceController
         $encoded_data = base64_encode(json_encode($data));
 
         $response = [
-            'data' => $encoded_data
+            'data' => $encoded_data,
+            'total' => count($this->todolist->getTodolists())
         ];
         return $this->respond($response, 200, 'application/json');
     }

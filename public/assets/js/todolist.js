@@ -1,6 +1,8 @@
 $(document).ready(function () {
     var currentDate = formatDate(new Date());
     var sortToggled = true;
+    var limitTodolist = 10;
+    var totalTodolist = 0;
     var arrDataFilter = [];
 
     /* Ajax Token */
@@ -56,7 +58,7 @@ $(document).ready(function () {
         arrDataFilter.push($('#sortHiddenValue').val());
     }
 
-    function afterLoadTodoList() {
+    function afterLoadTodoList(total) {
         $('.btnMark').click(function () {
             var id = $(this).data('id');
             $.ajax({
@@ -70,7 +72,7 @@ $(document).ready(function () {
                         timer: 1500
                     });
                     getDataFilter();
-                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
                 },
                 error: function (xhr, status, error) {
                     alert('Error: ' + error);
@@ -118,7 +120,8 @@ $(document).ready(function () {
                                 timer: 1500
                             });
                             getDataFilter();
-                            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
+                            limitTodolist = 10;
                         },
                         error: function (xhr, status, error) {
                             alert('Error: ' + error);
@@ -127,16 +130,24 @@ $(document).ready(function () {
                 }
             });
         })
+
+        totalTodolist = total;
+        if (totalTodolist > 10) {
+            $('.load-btn').removeClass('d-none')
+        } else {
+            $('.load-btn').addClass('d-none')
+        }
     }
 
-    function loadTodolist(filterTodolist, sortByTodolist, sortTodolist) {
+    function loadTodolist(filterTodolist, sortByTodolist, sortTodolist, limitTodolist) {
         $.ajax({
             url: '/todolist',
             method: 'GET',
             data: {
                 filter: filterTodolist,
                 sortBy: sortByTodolist,
-                sort: sortTodolist
+                sort: sortTodolist,
+                limit: limitTodolist
             },
             success: function (response) {
                 var encoded_data = response.data;
@@ -186,7 +197,7 @@ $(document).ready(function () {
                         `;
                     });
                     $('#todolist-container').html(todolistHtml);
-                    afterLoadTodoList();
+                    afterLoadTodoList(response.total);
                 } else {
                     var unknownTodolist = '<div class="col-md-12 mt-4"><center><h4>Todo task doesnt exist yet</h4></center></div>';
                     $('#todolist-container').html(unknownTodolist);
@@ -213,7 +224,7 @@ $(document).ready(function () {
 
     $(function () {
         getDataFilter();
-        loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+        loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
 
         $(".due-date-button").datepicker({
             format: "dd/mm/yyyy",
@@ -268,7 +279,7 @@ $(document).ready(function () {
                         timer: 1500
                     });
                     getDataFilter();
-                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
                 },
                 error: function (xhr, status, error) {
                     Swal.fire({
@@ -311,7 +322,7 @@ $(document).ready(function () {
                         timer: 1500
                     });
                     getDataFilter();
-                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+                    loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
                 },
                 error: function (xhr, status, error) {
                     Swal.fire({
@@ -326,12 +337,12 @@ $(document).ready(function () {
 
         $(".filter-btn").on("change", function (event) {
             getDataFilter();
-            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
         });
 
         $(".sort-by-btn").on("change", function (event) {
             getDataFilter();
-            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
         });
 
         $(".sort-btn").on("click", function (event) {
@@ -347,7 +358,7 @@ $(document).ready(function () {
                 $('#sortHiddenValue').val('desc');
             }
             getDataFilter();
-            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2]);
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
         });
 
         $(".due-date-button-edit").datepicker({
@@ -371,6 +382,21 @@ $(document).ready(function () {
 
         $(".clear-due-date-button-edit").on("click", function () {
             clearDueDateButtonEdit();
+        })
+
+        $(".load-btn").on("click", function (event) {
+            if (totalTodolist < limitTodolist) {
+                Swal.fire({
+                    title: 'All task has been displayed',
+                    icon: 'warning',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                limitTodolist += 10;
+            }
+            getDataFilter();
+            loadTodolist(arrDataFilter[0], arrDataFilter[1], arrDataFilter[2], limitTodolist);
         })
     });
 });

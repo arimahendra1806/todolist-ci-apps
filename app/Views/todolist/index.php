@@ -106,6 +106,7 @@
         <div class="row mx-1 px-5 pb-3 w-80">
             <div class="col mx-auto">
                 <div id="todolist-container"></div>
+                <button class="btn btn-warning w-100 mt-4 load-btn d-none"><b>Load More Task</b></button>
             </div>
         </div>
     </div>
